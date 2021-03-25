@@ -12,9 +12,11 @@ from sqlalchemy.exc import ProgrammingError
 from os import getenv
 from dotenv import load_dotenv
 import psycopg2
+import geopy
 
 from app.textmatcher import TextMatcher
 from app.training_data import ranked_reports
+from geopy.geocoders import Nominatim
 #import BD url from .env file
 load_dotenv()
 #make database connection
@@ -33,6 +35,9 @@ ACCESS_SECRET = getenv("ACCESS_SECRET")
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 api = tweepy.API(auth)
+
+# create geopy object
+geolocator = Nominatim(user_agent="incident_location_lookup")
 
 #quick DB query statment to run in the function
 statement = 'SELECT id_str FROM twitter_potential_incidents ORDER BY id_str DESC LIMIT 1'
@@ -79,6 +84,9 @@ def update_twitter_data():
             created = status.created_at
             source = status.user.url
             language = status.lang
+            
+            lookup_loc = geolocator.geocode(loc)
+            final_lookup = lookup_loc.raw['address']
 
             if geo is not None:
                 geo = json.dumps(geo)
@@ -94,6 +102,13 @@ def update_twitter_data():
                     coordinates=coords,
                     text=text,
                     geo=geo,
+                    # Generating geodata
+                    city=final_lookup.get('city', ''),
+                    state=final_lookup.get('state', ''),
+                    lat=lookup_loc.latitude,
+                    long=lookup_loc.longitude,
+                    title=text.split()[8:]
+                    #
                     user_name=name,
                     user_created=user_created,
                     id_str=id_str,
