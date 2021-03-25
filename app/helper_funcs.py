@@ -105,7 +105,7 @@ def preprocessNewData(new_data_json):
 def tweet_dupes(tweet, reddit_db):
     tweet_url = "https://twitter.com/" + tweet.user.screen_name + "/status/" + tweet.id_str
     
-    for url in reddit_db['links']:
+    for url in reddit_db[3]:
         if url == tweet_url:
             return False
     
