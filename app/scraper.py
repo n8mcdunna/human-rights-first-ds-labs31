@@ -12,6 +12,7 @@ from sqlalchemy.exc import ProgrammingError
 from os import getenv
 from dotenv import load_dotenv
 import psycopg2
+from geopy.geocoders import GoogleV3
 import geopy
 
 from app.textmatcher import TextMatcher
@@ -19,8 +20,10 @@ from app.training_data import ranked_reports
 from app.helper_funcs import tweet_dupes
 from geopy import geocoders
 from geopy.geocoders import Nominatim
+
 #import BD url from .env file
 load_dotenv()
+
 #make database connection
 db = dataset.connect(getenv("DB_URL"))
 
@@ -90,19 +93,13 @@ def update_twitter_data(reddit_db):
             source = status.user.url
             language = status.lang
             
-            #generating geodata
-            g = geocoders.GoogleV3(api_key='AIzaSyCE5lVARWiC2QVx4gbXnomR5_rydM3vndQ')
-            
-            try:
-                glocation = g.geocode(loc, timeout=10)
-                city = glocation.address,
-                state = glocation.address,
-                lat = glocation.latitude,
-                long = glocation.longitude
-            except AttributeError:
-                print("Problem with data or cannot Geocode.")
              
-            title=text.split()[:8]
+            title = text.split()[:8]
+            location = loc.split(',') + ['unknown'] + ['unknown']
+            city = location[0]
+            state = location[1]
+
+
 
             if geo is not None:
                 geo = json.dumps(geo)
@@ -118,12 +115,14 @@ def update_twitter_data(reddit_db):
                     coordinates=coords,
                     text=text,
                     geo=geo,
+
                     # inserting geodata into table
                     city=city,
                     state=state,
-                    lat=lat,
-                    long=long,
+                    lat=" ",
+                    long=" ",
                     title=title,
+
                     #
                     user_name=name,
                     user_created=user_created,
