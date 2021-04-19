@@ -8,8 +8,6 @@ from fastapi_utils.tasks import repeat_every
 from app import db, twitter, reddit
 from app.scraper import update_twitter_data
 from app.helper_funcs import check_new_items, preprocessNewData, loadData, insertData
-from app.create_db_tables import initialize_police_table
-
 
 description = """
 DS API for the Human Rights First Blue Witness Dashboard
@@ -32,9 +30,7 @@ app.include_router(db.router, tags=['Database'])
 app.include_router(reddit.router, tags=['Reddit'])
 app.include_router(twitter.router, tags=['Twitter'])
 
-initialize_police_table()
-
-
+# Update the database with new info from the pb API.
 @app.on_event('startup')
 @repeat_every(seconds=60*60*12)  # runs function below every 24 hours 
 async def run_update() -> None:
