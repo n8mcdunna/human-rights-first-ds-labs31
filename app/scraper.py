@@ -119,10 +119,15 @@ def update_twitter_data(reddit_db):
                     latitude=None,
                     longitude=None,
                     title=text.split()[:8]
+
                 ))
             except ProgrammingError as err:
                 print(err)
 
+             # Sends automated tweet response to identified incidents, required to start with a user name mention
+             # Non-functioning - tested on personal account without results (Placement of code wrong?  Something else?)
+             # twitter_API.update_status(status='@' + name + ' Hi, this is a test tweet from my Twitter bot!  Please ignore for now. :)', in_reply_to_status_id=id_str)
+        
     def on_error(self, status_code):
         if status_code == 420:
             # return False if tweepy connection fails
